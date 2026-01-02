@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Life Weeks Grid</title>
+<style>
+  body{
+    margin:0;
+    background:#ffffff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:system-ui;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(55,10px);
+    grid-auto-rows:10px;
+    gap:6px;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    background:#dddddd;   /* пустая клетка */
+  }
+  .dot.filled{
+    background:#000000;   /* заполненный кубик — чёрный */
+  }
+</style>
+</head>
+<body>
+<div id="grid" class="grid"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const dobStr = params.get("dob") || "1996-12-04"; // ваша дата
+const dob = new Date(dobStr);
+const now = new Date();
+const msInWeek = 1000*60*60*24*7;
+const weeksLived = Math.floor((now - dob) / msInWeek);
+
+const weeksTotal = 55 * 90; // запас на 90 лет
+const grid = document.getElementById("grid");
+
+for (let i = 0; i < weeksTotal; i++){
+  const dot = document.createElement("div");
+  dot.className = "dot" + (i < weeksLived ? " filled" : "");
+  grid.appendChild(dot);
+}
+</script>
+</body>
+</html>
