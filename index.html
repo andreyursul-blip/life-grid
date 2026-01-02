@@ -14,40 +14,101 @@
     height:100vh;
     font-family:system-ui;
   }
+
+  .years{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .year-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .year-label{
+    width:42px;
+    text-align:right;
+    font-size:11px;
+    color:#555;
+  }
+
   .grid{
     display:grid;
-    grid-template-columns:repeat(55,10px);
+    grid-template-columns:repeat(52,10px);
     grid-auto-rows:10px;
     gap:6px;
   }
+
   .dot{
     width:10px;
     height:10px;
-    background:#dddddd;   /* пустая клетка */
+    background:#dddddd;  /* пустая клетка */
   }
   .dot.filled{
-    background:#000000;   /* заполненный кубик — чёрный */
+    background:#000000;  /* прожитая неделя */
+  }
+  .dot.birthday{
+    background:#ffa500;  /* день рождения */
+  }
+  .dot.current{
+    background:#ff8c00;  /* текущая неделя */
   }
 </style>
 </head>
 <body>
-<div id="grid" class="grid"></div>
+<div id="years" class="years"></div>
 
 <script>
 const params = new URLSearchParams(location.search);
-const dobStr = params.get("dob") || "1996-12-04"; // ваша дата
+const dobStr = params.get("dob") || "1996-12-04";
 const dob = new Date(dobStr);
 const now = new Date();
-const msInWeek = 1000*60*60*24*7;
-const weeksLived = Math.floor((now - dob) / msInWeek);
 
-const weeksTotal = 55 * 90; // запас на 90 лет
-const grid = document.getElementById("grid");
+const YEARS = 90;
+const WEEKS_IN_YEAR = 52;
+const msWeek = 1000*60*60*24*7;
 
-for (let i = 0; i < weeksTotal; i++){
-  const dot = document.createElement("div");
-  dot.className = "dot" + (i < weeksLived ? " filled" : "");
-  grid.appendChild(dot);
+const weeksLived = Math.floor((now - dob) / msWeek);
+
+const yearsRoot = document.getElementById("years");
+
+function weekIndexFromDate(d){
+  return Math.floor((d - dob) / msWeek);
+}
+
+for(let y = 0; y < YEARS; y++){
+  const row = document.createElement("div");
+  row.className = "year-row";
+
+  const label = document.createElement("div");
+  label.className = "year-label";
+  label.textContent = (dob.getFullYear() + y);
+  row.appendChild(label);
+
+  const grid = document.createElement("div");
+  grid.className = "grid";
+
+  // вычисляем индекс недели, где примерно попадает ДР в этом году
+  const bday = new Date(dob);
+  bday.setFullYear(dob.getFullYear() + y);
+  const birthdayIndex = weekIndexFromDate(bday);
+
+  for(let w = 0; w < WEEKS_IN_YEAR; w++){
+    const i = y * WEEKS_IN_YEAR + w;
+    const dot = document.createElement("div");
+    dot.className = "dot";
+
+    if(i < weeksLived) dot.classList.add("filled");
+    if(i === birthdayIndex) dot.classList.add("birthday");
+    if(i === weeksLived) dot.classList.add("current");
+
+    grid.appendChild(dot);
+  }
+
+  row.appendChild(grid);
+  yearsRoot.appendChild(row);
 }
 </script>
 </body>
