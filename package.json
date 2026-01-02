@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@vercel/vercel": "^0.6.2"
+    "@vercel/og": "^0.6.2"
   }
 }
