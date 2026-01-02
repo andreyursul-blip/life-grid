@@ -1,94 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life in Weeks</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #fff;
-        }
-        svg {
-            display: block;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Life in Weeks</title>
+<style>
+  body {
+    margin: 0;
+    padding: 16px;
+    background: #f8f8f8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  }
+  .label {
+    font-size: 11px;
+    fill: #555;
+    font-weight: 500;
+  }
+</style>
 </head>
 <body>
-    <svg id="life"></svg>
-    <script>
-        const birth = new Date(1996, 11, 4);
-        const now = new Date();
-        const msPerWeek = 1000 * 60 * 60 * 24 * 7;
-        const weeksLived = Math.floor((now - birth) / msPerWeek);
 
-        const birthdayWeeks = new Set();
-        for (let age = 1; age < 90; age++) {
-            const bday = new Date(1996 + age, 11, 4);
-            const weeksFromBirth = Math.floor((bday - birth) / msPerWeek);
-            birthdayWeeks.add(weeksFromBirth);
-        }
+<svg id="lifeGrid"></svg>
 
-        const rows = 90;
-        const cols = 52;
-        const total = rows * cols;
-        const dotSize = 5;
-        const gap = 2;
-        const unit = dotSize + gap;
-        const gridWidth = cols * unit;
-        const gridHeight = rows * unit;
-        const labelWidth = 50;
-        const width = labelWidth + gridWidth;
-        const height = gridHeight;
+<script>
+const birthDate = new Date(1996, 11, 4);  // 4 декабря 1996
+const today = new Date();                 // всегда текущая реальная дата
 
-        const svg = document.getElementById('life');
-        svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
-        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        svg.style.background = '#fff';
+const MS_PER_WEEK = 1000 * 60 * 60 * 24 * 7;
+const weeksLived = Math.floor((today - birthDate) / MS_PER_WEEK);
 
-        const ns = 'http://www.w3.org/2000/svg';
+// Недели дней рождений (начиная с 1 года)
+const birthdayWeeks = new Set();
+for (let age = 1; age <= 89; age++) {
+  const bday = new Date(1996 + age, 11, 4);
+  const weeksFromBirth = Math.floor((bday - birthDate) / MS_PER_WEEK);
+  birthdayWeeks.add(weeksFromBirth);
+}
 
-        // Labels
-        for (let decade = 1; decade <= 9; decade++) {
-            const age = decade * 10;
-            const rowIndex = age - 1; // 0-based row for the end of that decade
-            const y = rowIndex * unit + unit / 2;
-            const text = document.createElementNS(ns, 'text');
-            text.setAttribute('x', labelWidth - 10);
-            text.setAttribute('y', y + dotSize / 2); // Adjust for text baseline
-            text.setAttribute('text-anchor', 'end');
-            text.setAttribute('font-size', '12');
-            text.setAttribute('fill', '#000');
-            text.textContent = age;
-            svg.appendChild(text);
-        }
+const COLS = 52;
+const ROWS = 90;
+const TOTAL = ROWS * COLS;
 
-        // Dots
-        for (let w = 0; w < total; w++) {
-            const row = Math.floor(w / cols);
-            const col = w % cols;
-            const x = labelWidth + col * unit + unit / 2;
-            const y = row * unit + unit / 2;
-            const circle = document.createElementNS(ns, 'circle');
-            circle.setAttribute('cx', x);
-            circle.setAttribute('cy', y);
-            circle.setAttribute('r', dotSize / 2);
+const DOT = 5.4;
+const GAP = 3.2;
+const CELL = DOT + GAP;
+const GRID_W = COLS * CELL;
+const GRID_H = ROWS * CELL;
 
-            let fill = '#ccc'; // future light gray
-            if (w < weeksLived) {
-                fill = birthdayWeeks.has(w) ? '#f00' : '#000'; // past: black or red
-            } else if (w > weeksLived) {
-                fill = birthdayWeeks.has(w) ? '#f00' : '#ccc'; // future: light gray or red
-            } else {
-                fill = '#f80'; // current: orange
-                // If current is birthday, still orange, as it's special
-            }
-            circle.setAttribute('fill', fill);
-            svg.appendChild(circle);
-        }
-    </script>
+const LEFT = 56;
+const TOP = 30;
+
+const svg = document.getElementById("lifeGrid");
+svg.setAttribute("width", LEFT + GRID_W + 24);
+svg.setAttribute("height", TOP + GRID_H + 50);
+svg.setAttribute("viewBox", `0 0 ${LEFT + GRID_W + 24} ${TOP + GRID_H + 50}`);
+
+// Заголовок
+svg.innerHTML += `<text x="${LEFT + GRID_W/2}" y="20" text-anchor="middle" font-size="15" font-weight="600">Life in Weeks</text>`;
+
+// Подписи возраста по десяткам
+for (let d = 0; d <= 9; d++) {
+  const age = d * 10;
+  const y = TOP + (d * 10 + 5) * CELL;
+  svg.innerHTML += `<text x="${LEFT - 10}" y="${y}" text-anchor="end" class="label">${age}</text>`;
+}
+
+// Разделители десятилетий
+for (let d = 1; d < 9; d++) {
+  const y = TOP + d * 10 * CELL - GAP/2;
+  svg.innerHTML += `<line x1="${LEFT-8}" x2="${LEFT + GRID_W + 8}" y1="${y}" y2="${y}" stroke="#e9e9e9" stroke-width="1"/>`;
+}
+
+// Все точки
+for (let w = 0; w < TOTAL; w++) {
+  const row = Math.floor(w / COLS);
+  const col = w % COLS;
+
+  const cx = LEFT + col * CELL + CELL/2;
+  const cy = TOP  + row * CELL + CELL/2;
+
+  let color = '#e3e3e3';  // будущее
+
+  if (w < weeksLived) {
+    color = birthdayWeeks.has(w) ? '#d32f2f' : '#1a1a1a';     // прошлое
+  } 
+  else if (w === weeksLived) {
+    color = '#f57c00';                                        // текущая неделя
+  } 
+  else {
+    color = birthdayWeeks.has(w) ? '#d32f2f' : '#e3e3e3';     // будущее + дни рождения
+  }
+
+  svg.innerHTML += `<circle cx="${cx}" cy="${cy}" r="${DOT/2}" fill="${color}"/>`;
+}
+</script>
 </body>
 </html>
-``` charset="
